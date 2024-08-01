@@ -19,8 +19,6 @@ import 'screens/chat.dart';
 import 'screens/group.dart';
 import 'screens/history.dart';
 
-import 'package:go_router/go_router.dart';
-
 final api = "https://business-api-638w.onrender.com";
 
 void main() async {
@@ -47,67 +45,31 @@ class BusinessCardApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final GoRouter _router = GoRouter(
-      routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => LoginScreen(),
-        ),
-        GoRoute(
-          path: '/home',
-          builder: (context, state) => HomePage(),
-        ),
-        GoRoute(
-          path: '/contact',
-          builder: (context, state) => ContactScreen(),
-        ),
-        GoRoute(
-          path: '/qr_code',
-          builder: (context, state) => QRCodeScreen(),
-        ),
-        GoRoute(
-          path: '/scan_qr',
-          builder: (context, state) => ScanQRScreen(),
-        ),
-        GoRoute(
-          path: '/notifications',
-          builder: (context, state) => NotificationsScreen(),
-        ),
-        GoRoute(
-          path: '/chat',
-          builder: (context, state) => ChatScreen(),
-        ),
-        GoRoute(
-          path: '/settings',
-          builder: (context, state) => SettingsScreen(),
-        ),
-        GoRoute(
-          path: '/register',
-          builder: (context, state) => RegisterScreen(),
-        ),
-        GoRoute(
-          path: '/group',
-          builder: (context, state) => GroupScreen(),
-        ),
-        // GoRoute(
-        //   path: '/history',
-        //   builder: (context, state) => HistoryScreen(),
-        // ),
-      ],
-      initialLocation: login != null ? '/home' : '/',
-      debugLogDiagnostics: true,
-    );
-
     return ChangeNotifierProvider(
       create: (_) => LoginProvider()..setLogin(login),
-      child: MaterialApp.router(
-        routerConfig: _router,
-        title: 'Business Card App',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+      child: Consumer<LoginProvider>(
+        builder: (context, loginProvider, _) {
+          return MaterialApp(
+            title: 'Business Card App',
+            theme: ThemeData(
+              primarySwatch: Colors.blue,
+            ),
+            initialRoute: '/',
+            routes: {
+              '/': (context) => loginProvider.login != null ? HomePage() : LoginScreen(),
+              '/home': (context) => HomePage(),
+              '/contact': (context) => ContactScreen(),
+              '/scan_qr': (context) => ScanQRScreen(),
+              '/notifications': (context) => NotificationsScreen(),
+              '/chat': (context) => ChatScreen(),
+              '/settings': (context) => SettingsScreen(),
+              '/register': (context) => RegisterScreen(),
+              '/group': (context) => GroupScreen(),
+              '/qr_code': (context) => QRCodeScreen(),
+            },
+          );
+        },
       ),
     );
   }
 }
- 

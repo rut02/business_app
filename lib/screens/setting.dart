@@ -1,4 +1,5 @@
 import 'package:app_card/login_provider.dart';
+import 'package:app_card/screens/account.dart';
 import 'package:app_card/screens/friendstatus.dart';
 import 'package:app_card/screens/history.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,10 @@ class SettingsScreen extends StatelessWidget {
               title: Text('Account'),
               onTap: () {
                 // Handle account settings
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AccountScreen()),
+                );
               },
             ),
             Divider(),
@@ -33,7 +38,8 @@ class SettingsScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CombinedScreen(userId: userId!)),
+                  MaterialPageRoute(
+                      builder: (context) => CombinedScreen(userId: userId!)),
                 );
               },
             ),
@@ -44,7 +50,8 @@ class SettingsScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => FriendStatsScreen(userId: userId!)),
+                  MaterialPageRoute(
+                      builder: (context) => FriendStatsScreen(userId: userId!)),
                 );
               },
             ),
