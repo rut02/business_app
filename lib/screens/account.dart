@@ -1,9 +1,10 @@
 import 'package:app_card/models/user.dart';
+import 'package:app_card/screens/channgePass.dart';
+import 'package:app_card/screens/editAccount.dart';
 import 'package:app_card/services/users.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:app_card/login_provider.dart';
-
 
 class AccountScreen extends StatelessWidget {
   @override
@@ -62,6 +63,12 @@ class AccountScreen extends StatelessWidget {
                     title: Text('Edit Account Details'),
                     onTap: () {
                       // Navigate to EditAccountScreen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                EditAccountScreen()),
+                      );
                     },
                   ),
                   Divider(),
@@ -70,6 +77,12 @@ class AccountScreen extends StatelessWidget {
                     title: Text('Change Password'),
                     onTap: () {
                       // Navigate to ChangePasswordScreen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                ChangePasswordScreen()),
+                      );
                     },
                   ),
                   Divider(),
@@ -78,7 +91,8 @@ class AccountScreen extends StatelessWidget {
                     title: Text('Logout'),
                     onTap: () {
                       // Handle logout
-                      Provider.of<LoginProvider>(context, listen: false).logout();
+                      Provider.of<LoginProvider>(context, listen: false)
+                          .logout();
                       Navigator.pushReplacementNamed(context, '/');
                     },
                   ),

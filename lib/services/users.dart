@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:ui';
 import 'package:app_card/models/create.dart';
 import 'package:app_card/models/login.dart';
 import 'package:app_card/models/profileImage.dart';
 import 'package:app_card/models/request.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'package:app_card/main.dart';
 import 'package:app_card/models/user.dart';
@@ -35,10 +37,10 @@ class UserService {
     required String phone,
     required String gender,
     required DateTime birthdate,
-    required String country,
+    required String subdistrict,
     required String district,
     required String province,
-    required String subdistrict,
+    required String country,
     required String position,
   }) async {
     try {
@@ -210,7 +212,7 @@ class UserService {
       print("Error creating card: $e");
     }
   }
-
+  
   Future<void> saveTokenToServer(String userId, String token) async {
     final apiUrl =
         Uri.parse('https://business-api-638w.onrender.com/user/token');
@@ -247,6 +249,68 @@ class UserService {
       }
     } catch (e) {
       print("Error sending notification: $e");
+    }
+  }
+  Future<void> updateUser({
+    required String uid,
+    required String firstname,
+    required String lastname,
+    required String gender,
+    required DateTime birthdate,
+    required String phone,
+    required String subdistrict,
+    required String district,
+    required String province,
+    required String country,
+    required String position,
+
+  }) async {
+    try {
+      final apiUrl = Uri.parse(api + '/user/' + uid);
+      final response = await http.post(
+        apiUrl,
+        body: json.encode({
+          'firstname': firstname,
+          'lastname': lastname,
+          'gender': gender,
+          'birthdate': DateFormat('yyyy-MM-dd').format(birthdate),
+          'phone': phone,
+          'country': country,
+          'district': district,
+          'province': province,
+          'subdistrict': subdistrict,
+          'position': position,
+          'address': '$subdistrict, $district, $province, $country',
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        print('User updated successfully');
+      } else {
+        print('Failed to update user. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error updating user: $e");
+    }
+  }
+
+  Future<void> changePassword(String uid, String oldPassword, String newPassword) async {
+    try {
+      final apiUrl = Uri.parse(api + '/users/changepass/$uid/password');
+      final response = await http.put(
+        apiUrl,
+        body: json.encode({'oldPassword': oldPassword, 'newPassword': newPassword}),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        print('Password updated successfully');
+      } else {
+        print('Failed to update password. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error updating password: $e");
     }
   }
 }

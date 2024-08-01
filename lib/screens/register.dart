@@ -27,6 +27,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   String? selectedGender;
   File? _imageFile;
+  bool _isSubmitting = false;
 
   final _formKey = GlobalKey<FormState>();
   int _currentStep = 0;
@@ -45,11 +46,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               key: _formKey,
               child: Stepper(
                 currentStep: _currentStep,
-                onStepTapped: (step) => setState(() => _currentStep = step),
-                onStepContinue: _currentStep < 2
+                onStepTapped: (step) => !_isSubmitting ? setState(() => _currentStep = step) : null,
+                onStepContinue: _isSubmitting ? null : _currentStep < 2
                     ? () => setState(() => _currentStep += 1)
                     : _submitForm,
-                onStepCancel: _currentStep > 0
+                onStepCancel: _isSubmitting ? null : _currentStep > 0
                     ? () => setState(() => _currentStep -= 1)
                     : null,
                 steps: [
@@ -83,9 +84,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       children: [
                         _buildTextField(phoneController, 'Phone', Icons.phone, keyboardType: TextInputType.phone),
                         SizedBox(height: 10),
-                        _buildTextField(districtController, 'District', Icons.location_city),
-                        SizedBox(height: 10),
                         _buildTextField(subdistrictController, 'Subdistrict', Icons.location_city),
+                        SizedBox(height: 10),
+                        _buildTextField(districtController, 'District', Icons.location_city),
                         SizedBox(height: 10),
                         _buildTextField(provinceController, 'Province', Icons.location_city),
                         SizedBox(height: 10),
@@ -234,7 +235,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           subtitle: Text(_imageFile == null ? 'No image selected' : 'Image selected'),
           trailing: IconButton(
             icon: Icon(Icons.add_a_photo, color: Theme.of(context).primaryColor),
-            onPressed: _pickImage,
+            onPressed: _isSubmitting ? null : _pickImage,
           ),
         ),
         if (_imageFile != null)
@@ -247,7 +248,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 alignment: Alignment.topRight,
                 child: IconButton(
                   icon: Icon(Icons.clear, color: Colors.red),
-                  onPressed: () {
+                  onPressed: _isSubmitting ? null : () {
                     setState(() {
                       _imageFile = null;
                     });
@@ -276,6 +277,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _submitForm() async {
     if (_formKey.currentState?.validate() ?? false) {
+      if (_imageFile == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('กรุณาอัปโหลดรูปโปรไฟล์')),
+        );
+        return;
+      }
+
+      setState(() {
+        _isSubmitting = true;
+      });
+
       try {
         Create response = await UserService().createUser(
           email: emailController.text,
@@ -344,6 +356,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to register. Please try again later.')),
         );
+      } finally {
+        setState(() {
+          _isSubmitting = false;
+        });
       }
     }
   }

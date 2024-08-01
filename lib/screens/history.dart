@@ -139,6 +139,7 @@ class FriendStatsTab extends StatelessWidget {
 
 
 
+
 class HistoryTab extends StatefulWidget {
   final String userId;
 
@@ -236,6 +237,7 @@ class _HistoryTabState extends State<HistoryTab> {
     );
   }
 }
+
 
 class FriendStat {
   final DateTime date;
