@@ -6,7 +6,7 @@ part 'friend.g.dart';
 class Friend {
   Friend();
 
-  late String FriendsId;
+  late String friendId;
   late String time;
   late String userId;
   late String status;

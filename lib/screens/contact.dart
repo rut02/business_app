@@ -59,7 +59,7 @@ class _ContactScreenState extends State<ContactScreen> {
       var friendsList = await friendService.getFriendByuserId(userId);
       List<UserWithStatus> usersWithStatusList = [];
       for (var friend in friendsList) {
-        var user = await userService.getUserByid(friend.FriendsId);
+        var user = await userService.getUserByid(friend.friendId);
         if (user != null) {
           usersWithStatusList.add(UserWithStatus(
             user: user,

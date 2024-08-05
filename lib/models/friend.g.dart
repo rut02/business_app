@@ -7,14 +7,14 @@ part of 'friend.dart';
 // **************************************************************************
 
 Friend _$FriendFromJson(Map<String, dynamic> json) => Friend()
-  ..FriendsId = json['FriendsId'] as String
+  ..friendId = json['friendId'] as String
   ..time = json['time'] as String
   ..userId = json['userId'] as String
   ..status = json['status'] as String
   ..id = json['id'] as String;
 
 Map<String, dynamic> _$FriendToJson(Friend instance) => <String, dynamic>{
-      'FriendsId': instance.FriendsId,
+      'friendId': instance.friendId,
       'time': instance.time,
       'userId': instance.userId,
       'status': instance.status,

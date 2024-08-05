@@ -20,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final UserService userService = UserService();
 
   bool isLoading = false;
+  bool obscurePassword = true;
   String errorMessage = '';
 
   @override
@@ -60,12 +61,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 10),
                 TextField(
                   controller: passwordController,
-                  obscureText: true,
+                  obscureText: obscurePassword,
                   enabled: !isLoading,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.lock),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.lock),
                     labelText: 'Password',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          obscurePassword = !obscurePassword;
+                        });
+                      },
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -82,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.only(bottom: 10),
                     child: Text(
                       errorMessage,
-                      style: TextStyle(color: Colors.red),
+                      style: const TextStyle(color: Colors.red),
                     ),
                   ),
                 SizedBox(
@@ -115,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       try {
                         final Login result = await userService.authenticateUser(email, password);
 
-                        if (result.role == "hr" || result.role == "user") {
+                        if (result.role == "employee" || result.role == "user") {
                           Provider.of<LoginProvider>(context, listen: false).setLogin(result);
 
                           // บันทึกข้อมูลลง SharedPreferences
@@ -149,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       backgroundColor: Colors.green,
                     ),
                     child: isLoading
-                        ? CircularProgressIndicator(
+                        ? const CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           )
                         : const Text('Login'),

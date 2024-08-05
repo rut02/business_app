@@ -37,26 +37,66 @@ class CombinedScreen extends StatelessWidget {
   }
 }
 
-class FriendStatsTab extends StatelessWidget {
+class FriendStatsTab extends StatefulWidget {
   final String userId;
 
   const FriendStatsTab({Key? key, required this.userId}) : super(key: key);
 
-  Future<List<History>> _fetchFriendHistory() async {
-    final response = await http.get(Uri.parse('https://business-api-638w.onrender.com/history/friend/$userId'));
+  @override
+  _FriendStatsTabState createState() => _FriendStatsTabState();
+}
+
+class _FriendStatsTabState extends State<FriendStatsTab> {
+  String _selectedRange = 'All';
+  Future<List<History>>? _historyFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _historyFuture = _fetchFriendHistory(_selectedRange);
+  }
+
+  Future<List<History>> _fetchFriendHistory(String range) async {
+    final response = await http.get(Uri.parse('https://business-api-638w.onrender.com/history/friend/${widget.userId}'));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      return data.map((item) => History.fromJson(item)).toList();
+      List<History> historyList = data.map((item) => History.fromJson(item)).toList();
+
+      if (range != 'All') {
+        DateTime now = DateTime.now();
+        historyList = historyList.where((history) {
+          DateTime date = DateTime.parse(history.timestamp);
+          if (range == '1 Day') {
+            return date.isAfter(now.subtract(Duration(days: 1)));
+          } else if (range == '1 Week') {
+            return date.isAfter(now.subtract(Duration(days: 7)));
+          } else if (range == '1 Month') {
+            return date.isAfter(now.subtract(Duration(days: 30)));
+          }
+          return false;
+        }).toList();
+      }
+
+      return historyList;
+    } else if (response.statusCode == 404) {
+      return [];
     } else {
       throw Exception('Failed to load friend history');
     }
   }
 
+  void _updateRange(String? newValue) {
+    setState(() {
+      _selectedRange = newValue!;
+      _historyFuture = _fetchFriendHistory(_selectedRange);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<History>>(
-      future: _fetchFriendHistory(),
+      future: _historyFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
@@ -67,58 +107,56 @@ class FriendStatsTab extends StatelessWidget {
         } else {
           final historyList = snapshot.data!;
 
-          // Aggregate data by date for the graph
-          Map<DateTime, int> addDataMap = {};
-          Map<DateTime, int> deleteDataMap = {};
+          int totalAdded = 0;
+          int totalDeleted = 0;
 
           for (var entry in historyList) {
-            DateTime date = DateTime.parse(entry.timestamp);
-            DateTime dateOnly = DateTime(date.year, date.month, date.day);
-
             if (entry.action == 'add_friend') {
-              addDataMap[dateOnly] = (addDataMap[dateOnly] ?? 0) + 1;
+              totalAdded += 1;
             } else if (entry.action == 'delete_friend') {
-              deleteDataMap[dateOnly] = (deleteDataMap[dateOnly] ?? 0) + 1;
+              totalDeleted += 1;
             }
           }
-
-          final addData = addDataMap.entries
-              .map((e) => FriendStat(e.key, e.value))
-              .toList();
-          final deleteData = deleteDataMap.entries
-              .map((e) => FriendStat(e.key, e.value))
-              .toList();
 
           return SingleChildScrollView(
             child: Column(
               children: [
+                DropdownButton<String>(
+                  value: _selectedRange,
+                  onChanged: _updateRange,
+                  items: <String>['All', '1 Day', '1 Week', '1 Month']
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
                 Container(
-                  margin: EdgeInsets.symmetric(horizontal: 8.0), // Add margin to prevent cutting off
+                  margin: EdgeInsets.symmetric(horizontal: 8.0),
                   height: 300,
                   child: SfCartesianChart(
-                    primaryXAxis: DateTimeAxis(
-                      intervalType: DateTimeIntervalType.days,
-                      interval: 1,
-                      dateFormat: DateFormat('yyyy-MM-dd'),
-                      edgeLabelPlacement: EdgeLabelPlacement.shift, // Shift edge labels to prevent cutting off
-                      labelAlignment: LabelAlignment.end,
-                    ),
+                    primaryXAxis: CategoryAxis(),
                     title: ChartTitle(text: 'Friend Stats Over Time'),
                     legend: Legend(isVisible: true),
                     tooltipBehavior: TooltipBehavior(enable: true),
                     series: <CartesianSeries>[
-                      ColumnSeries<FriendStat, DateTime>(
-                        dataSource: addData,
-                        xValueMapper: (FriendStat stat, _) => stat.date,
-                        yValueMapper: (FriendStat stat, _) => stat.count,
+                      ColumnSeries<ChartData, String>(
+                        dataSource: [
+                          ChartData('Added', totalAdded),
+                        ],
+                        xValueMapper: (ChartData data, _) => data.category,
+                        yValueMapper: (ChartData data, _) => data.value,
                         name: 'Added',
                         color: Colors.green,
                         dataLabelSettings: DataLabelSettings(isVisible: true),
                       ),
-                      ColumnSeries<FriendStat, DateTime>(
-                        dataSource: deleteData,
-                        xValueMapper: (FriendStat stat, _) => stat.date,
-                        yValueMapper: (FriendStat stat, _) => stat.count,
+                      ColumnSeries<ChartData, String>(
+                        dataSource: [
+                          ChartData('Deleted', totalDeleted),
+                        ],
+                        xValueMapper: (ChartData data, _) => data.category,
+                        yValueMapper: (ChartData data, _) => data.value,
                         name: 'Deleted',
                         color: Colors.red,
                         dataLabelSettings: DataLabelSettings(isVisible: true),
@@ -135,10 +173,12 @@ class FriendStatsTab extends StatelessWidget {
   }
 }
 
+class ChartData {
+  final String category;
+  final int value;
 
-
-
-
+  ChartData(this.category, this.value);
+}
 
 class HistoryTab extends StatefulWidget {
   final String userId;
@@ -162,10 +202,12 @@ class _HistoryTabState extends State<HistoryTab> {
 
   Future<List<History>> _fetchHistory() async {
     final response = await http.get(Uri.parse('https://business-api-638w.onrender.com/history/user/${widget.userId}'));
-
+    print(response.statusCode);
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
       return data.map((item) => History.fromJson(item)).toList();
+    } else if (response.statusCode == 404) {
+      return [];
     } else {
       throw Exception('Failed to load history');
     }
@@ -204,13 +246,31 @@ class _HistoryTabState extends State<HistoryTab> {
                 builder: (context, userSnapshot) {
                   if (userSnapshot.connectionState == ConnectionState.waiting) {
                     return ListTile(
-                      title: Text('${history.action} with ${history.friendId}'),
-                      subtitle: Text(history.timestamp),
+                      leading: Icon(
+                        history.action == 'add_friend' ? Icons.person_add : Icons.person_remove,
+                        color: history.action == 'add_friend' ? Colors.green : Colors.red,
+                      ),
+                      title: Text(
+                        '${history.action == 'add_friend' ? 'Added' : 'Deleted'} friend: Loading...',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.parse(history.timestamp)),
+                      ),
                     );
                   } else if (userSnapshot.hasError) {
                     return ListTile(
-                      title: Text('${history.action} with ${history.friendId}'),
-                      subtitle: Text(history.timestamp),
+                      leading: Icon(
+                        history.action == 'add_friend' ? Icons.person_add : Icons.person_remove,
+                        color: history.action == 'add_friend' ? Colors.green : Colors.red,
+                      ),
+                      title: Text(
+                        '${history.action == 'add_friend' ? 'Added' : 'Deleted'} friend: Error',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.parse(history.timestamp)),
+                      ),
                       trailing: Icon(Icons.error, color: Colors.red),
                     );
                   } else {
@@ -238,10 +298,10 @@ class _HistoryTabState extends State<HistoryTab> {
   }
 }
 
-
-class FriendStat {
+class FriendStats {
   final DateTime date;
-  final int count;
+  int added;
+  int deleted;
 
-  FriendStat(this.date, this.count);
+  FriendStats(this.date, this.added, this.deleted);
 }

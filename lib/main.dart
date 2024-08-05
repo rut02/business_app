@@ -23,16 +23,23 @@ final api = "https://business-api-638w.onrender.com";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    print("Error initializing Firebase: $e");
+  }
 
-  final UserService userService = UserService();
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? loginData = prefs.getString('loginData');
+  SharedPreferences prefs;
   Login? login;
-  print('loginData: $loginData');
-  if (loginData != null) {
-    final Map<String, dynamic> loginMap = jsonDecode(loginData);
-    login = Login.fromJson(loginMap);
+  try {
+    prefs = await SharedPreferences.getInstance();
+    String? loginData = prefs.getString('loginData');
+    if (loginData != null) {
+      final Map<String, dynamic> loginMap = jsonDecode(loginData);
+      login = Login.fromJson(loginMap);
+    }
+  } catch (e) {
+    print("Error retrieving login data: $e");
   }
 
   runApp(BusinessCardApp(login: login));
@@ -53,6 +60,8 @@ class BusinessCardApp extends StatelessWidget {
             title: 'Business Card App',
             theme: ThemeData(
               primarySwatch: Colors.blue,
+              fontFamily: 'Roboto',
+              // เพิ่มการปรับแต่งธีมเพิ่มเติมที่นี่
             ),
             initialRoute: '/',
             routes: {

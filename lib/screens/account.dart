@@ -6,13 +6,35 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:app_card/login_provider.dart';
 
-class AccountScreen extends StatelessWidget {
+class AccountScreen extends StatefulWidget {
+  @override
+  _AccountScreenState createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends State<AccountScreen> {
+  Future<User>? _userFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _userFuture = _fetchUserData();
+  }
+
+  Future<User> _fetchUserData() async {
+    final userId = Provider.of<LoginProvider>(context, listen: false).login?.id;
+    return await UserService().getUserByid(userId!);
+  }
+
+  void _refreshUserData() {
+    setState(() {
+      _userFuture = _fetchUserData();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final userId = Provider.of<LoginProvider>(context, listen: false).login?.id;
-
     return FutureBuilder<User>(
-      future: UserService().getUserByid(userId!),
+      future: _userFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
@@ -61,14 +83,15 @@ class AccountScreen extends StatelessWidget {
                   ListTile(
                     leading: Icon(Icons.edit),
                     title: Text('Edit Account Details'),
-                    onTap: () {
-                      // Navigate to EditAccountScreen
-                      Navigator.push(
+                    onTap: () async {
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                EditAccountScreen()),
+                            builder: (context) => EditAccountScreen()),
                       );
+                      if (result == true) {
+                        _refreshUserData();
+                      }
                     },
                   ),
                   Divider(),
@@ -76,12 +99,10 @@ class AccountScreen extends StatelessWidget {
                     leading: Icon(Icons.lock),
                     title: Text('Change Password'),
                     onTap: () {
-                      // Navigate to ChangePasswordScreen
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                ChangePasswordScreen()),
+                            builder: (context) => ChangePasswordScreen()),
                       );
                     },
                   ),
@@ -90,7 +111,6 @@ class AccountScreen extends StatelessWidget {
                     leading: Icon(Icons.logout),
                     title: Text('Logout'),
                     onTap: () {
-                      // Handle logout
                       Provider.of<LoginProvider>(context, listen: false)
                           .logout();
                       Navigator.pushReplacementNamed(context, '/');

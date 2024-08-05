@@ -266,8 +266,8 @@ class UserService {
 
   }) async {
     try {
-      final apiUrl = Uri.parse(api + '/user/' + uid);
-      final response = await http.post(
+      final apiUrl = Uri.parse(api + '/users/update/' + uid);
+      final response = await http.put(
         apiUrl,
         body: json.encode({
           'firstname': firstname,
@@ -311,6 +311,26 @@ class UserService {
       }
     } catch (e) {
       print("Error updating password: $e");
+    }
+  }
+  Future<bool> checkEmail(String email) async {
+    try {
+      final apiUrl = Uri.parse(api + '/users/check-email');
+      final response = await http.post(
+        apiUrl,
+        body: json.encode({'email': email}),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+            return true;
+      } else {
+        print('Failed to check email. Status code: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print("Error checking email: $e");
+      return false;
     }
   }
 }

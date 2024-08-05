@@ -53,7 +53,7 @@ class _ChatScreenState extends State<ChatScreen> {
             return ListView.builder(
               itemCount: friends.length,
               itemBuilder: (context, index) {
-                String friendId = friends[index].FriendsId;
+                String friendId = friends[index].friendId;
                 return FutureBuilder<User>(
                   future: userService.getUserByid(friendId),
                   builder: (context, userSnapshot) {

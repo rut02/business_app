@@ -1,4 +1,3 @@
-//request.dart
 import 'package:flutter/material.dart';
 import 'package:app_card/models/status.dart';
 import 'package:app_card/services/requests.dart';
@@ -16,7 +15,7 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
-  late String contactName;
+  late String contactName = ''; // เริ่มต้นเป็นสตริงว่าง
   Status? status;
 
   final UserService userService = UserService();
@@ -87,9 +86,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               future: checkRequestStatus(loginProvider.login!.id),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+                  return Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 4.0, // ปรับแต่งความกว้างของวงกลมโหลด
+                    ),
+                  );
                 } else if (snapshot.hasError) {
-                  return Text('Error loading data: ${snapshot.error}');
+                  return Center(
+                    child: Text('Error loading data: ${snapshot.error}'),
+                  );
                 } else {
                   status = snapshot.data;
 

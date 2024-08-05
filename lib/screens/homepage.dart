@@ -59,117 +59,119 @@ class _HomePageState extends State<HomePage> {
               return Center(child: Text('Error: ${snapshot.error}'));
             } else if (snapshot.hasData && snapshot.data != null) {
               final user = snapshot.data!;
-              return ListView(
-                children: <Widget>[
-                  const Text(
-                    'MY CARD',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+              return SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    const Text(
+                      'MY CARD',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Card(
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Container(
-                      height: 200,
-                      decoration: BoxDecoration(
+                    const SizedBox(height: 10),
+                    Card(
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
-                        image: user.business_card.isNotEmpty
-                            ? DecorationImage(
-                                image: NetworkImage(user.business_card),
-                                fit: BoxFit.cover,
+                      ),
+                      child: Container(
+                        height: 200,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          image: user.business_card.isNotEmpty
+                              ? DecorationImage(
+                                  image: NetworkImage(user.business_card),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: user.business_card.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  'No Business Card Available',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               )
                             : null,
                       ),
-                      child: user.business_card.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'No Business Card Available',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            )
-                          : null,
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'CARD DETAILS',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Card(
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ListTile(
-                            leading: const Icon(Icons.person),
-                            title: Text('${user.firstname} ${user.lastname}'),
-                          ),
-                          ListTile(
-                            leading: const Icon(Icons.calendar_today),
-                            title: Text('AGE: ${user.age}'),
-                          ),
-                          ListTile(
-                            leading: const Icon(Icons.person_outline),
-                            title: Text('GENDER: ${user.gender}'),
-                          ),
-                          ListTile(
-                            leading: const Icon(Icons.phone),
-                            title: Text('TEL: ${user.phone}'),
-                          ),
-                          if (user.companybranch?.company.name != null)
-                            ListTile(
-                              leading: const Icon(Icons.business),
-                              title: Text('Company: ${user.companybranch?.company.name}'),
-                            ),
-                          if (user.companybranch?.name != null)
-                            ListTile(
-                              leading: const Icon(Icons.location_city),
-                              title: Text('Branch: ${user.companybranch?.name}'),
-                            ),
-                          if (user.department?.name != null)
-                            ListTile(
-                              leading: const Icon(Icons.apartment),
-                              title: Text('Department: ${user.department?.name}'),
-                            ),
-                          if (user.department?.phone != null)
-                            ListTile(
-                              leading: const Icon(Icons.phone_in_talk),
-                              title: Text('Department Phone: ${user.department?.phone}'),
-                            ),
-                          ListTile(
-                            leading: const Icon(Icons.work),
-                            title: Text('POSITION: ${user.position}'),
-                          ),
-                          ListTile(
-                            leading: const Icon(Icons.email),
-                            title: Text('EMAIL: ${user.email}'),
-                          ),
-                          ListTile(
-                            leading: const Icon(Icons.location_on),
-                            title: Text('ADDRESS: ${user.address}'),
-                          ),
-                        ],
+                    const SizedBox(height: 20),
+                    const Text(
+                      'CARD DETAILS',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    Card(
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ListTile(
+                              leading: const Icon(Icons.person),
+                              title: Text('${user.firstname} ${user.lastname}'),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.calendar_today),
+                              title: Text('AGE: ${user.age}'),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.person_outline),
+                              title: Text('GENDER: ${user.gender}'),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.phone),
+                              title: Text('TEL: ${user.phone}'),
+                            ),
+                            if (user.companybranch?.company.name != null)
+                              ListTile(
+                                leading: const Icon(Icons.business),
+                                title: Text('Company: ${user.companybranch?.company.name}'),
+                              ),
+                            if (user.companybranch?.name != null)
+                              ListTile(
+                                leading: const Icon(Icons.location_city),
+                                title: Text('Branch: ${user.companybranch?.name}'),
+                              ),
+                            if (user.department?.name != null)
+                              ListTile(
+                                leading: const Icon(Icons.apartment),
+                                title: Text('Department: ${user.department?.name}'),
+                              ),
+                            if (user.department?.phone != null)
+                              ListTile(
+                                leading: const Icon(Icons.phone_in_talk),
+                                title: Text('Department Phone: ${user.department?.phone}'),
+                              ),
+                            ListTile(
+                              leading: const Icon(Icons.work),
+                              title: Text('POSITION: ${user.position}'),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.email),
+                              title: Text('EMAIL: ${user.email}'),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.location_on),
+                              title: Text('ADDRESS: ${user.address}'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               );
             } else {
               return const Center(child: Text('No data available'));
