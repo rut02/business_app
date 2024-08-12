@@ -55,46 +55,58 @@ class _GroupScreenState extends State<GroupScreen> {
   }
 
   void showCreateGroupDialog() {
-    final TextEditingController groupNameController = TextEditingController();
-    final loginProvider = context.read<LoginProvider>();
-    String? userId = loginProvider.login?.id;
+  final TextEditingController groupNameController = TextEditingController();
+  final ValueNotifier<bool> isButtonEnabled = ValueNotifier(false);
+  final loginProvider = context.read<LoginProvider>();
+  String? userId = loginProvider.login?.id;
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('สร้างกลุ่มใหม่'),
-          content: TextField(
-            controller: groupNameController,
-            decoration: InputDecoration(
-              labelText: 'ชื่อกลุ่ม',
-            ),
+  groupNameController.addListener(() {
+    isButtonEnabled.value = groupNameController.text.isNotEmpty;
+  });
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('สร้างกลุ่มใหม่'),
+        content: TextField(
+          controller: groupNameController,
+          decoration: InputDecoration(
+            labelText: 'ชื่อกลุ่ม',
           ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('ยกเลิก'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('บันทึก'),
-              onPressed: () async {
-                String groupName = groupNameController.text;
-                if (groupName.isNotEmpty && userId != null) {
-                  await groupService.createGroup(groupName, userId);
-                  Navigator.of(context).pop();
-                  loadGroups(); // Reload the groups
-                } else {
-                  print('Group name is empty or userId is null');
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: Text('ยกเลิก'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: isButtonEnabled,
+            builder: (context, value, child) {
+              return TextButton(
+                child: Text('บันทึก'),
+                onPressed: value
+                    ? () async {
+                        String groupName = groupNameController.text;
+                        if (groupName.isNotEmpty && userId != null) {
+                          await groupService.createGroup(groupName, userId);
+                          Navigator.of(context).pop();
+                          loadGroups(); // Reload the groups
+                        } else {
+                          print('Group name is empty or userId is null');
+                        }
+                      }
+                    : null,
+              );
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
 
   void deleteSelectedGroups() async {
     try {

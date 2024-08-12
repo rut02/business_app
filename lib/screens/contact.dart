@@ -1,5 +1,7 @@
 import 'package:app_card/screens/detailscreen.dart';
+import 'package:app_card/screens/group.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:app_card/models/friend.dart';
 import 'package:app_card/models/user.dart';
@@ -33,7 +35,10 @@ class _ContactScreenState extends State<ContactScreen> {
           return user.firstname.toLowerCase().contains(searchQuery) ||
               user.lastname.toLowerCase().contains(searchQuery) ||
               user.position.toLowerCase().contains(searchQuery) ||
-              (user.companybranch?.company.name.toLowerCase().contains(searchQuery) ?? false);
+              (user.companybranch?.company.name
+                      .toLowerCase()
+                      .contains(searchQuery) ??
+                  false);
         }).toList();
       });
     });
@@ -69,7 +74,6 @@ class _ContactScreenState extends State<ContactScreen> {
         }
       }
 
-      // จัดเรียงเพื่อนตามสถานะ ถ้าสถานะเป็น "1" จะอยู่ด้านบน
       usersWithStatusList.sort((a, b) => b.status.compareTo(a.status));
 
       setState(() {
@@ -87,7 +91,8 @@ class _ContactScreenState extends State<ContactScreen> {
 
   void toggleFriendStatus(UserWithStatus userWithStatus, String userId) async {
     String newStatus = userWithStatus.status == "1" ? "0" : "1";
-    await friendService.updateFriendStatus(userId, userWithStatus.user.id, newStatus);
+    await friendService.updateFriendStatus(
+        userId, userWithStatus.user.id, newStatus);
     setState(() {
       userWithStatus.status = newStatus;
       friends.sort((a, b) => b.status.compareTo(a.status));
@@ -102,7 +107,10 @@ class _ContactScreenState extends State<ContactScreen> {
       } else if (criterion == 'name') {
         friends.sort((a, b) => a.user.firstname.compareTo(b.user.firstname));
       } else if (criterion == 'company') {
-        friends.sort((a, b) => a.user.companybranch?.company.name.compareTo(b.user.companybranch?.company.name ?? '') ?? 0);
+        friends.sort((a, b) =>
+            a.user.companybranch?.company.name
+                .compareTo(b.user.companybranch?.company.name ?? '') ??
+            0);
       }
       filteredFriends = friends;
     });
@@ -121,7 +129,12 @@ class _ContactScreenState extends State<ContactScreen> {
           IconButton(
             icon: Icon(Icons.group),
             onPressed: () {
-              Navigator.pushNamed(context, '/group');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GroupScreen(),
+                ),
+              );
             },
           ),
         ],
@@ -153,12 +166,17 @@ class _ContactScreenState extends State<ContactScreen> {
                   .map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
-                  child: Text(value == 'date' ? 'วัน' : value == 'name' ? 'ชื่อ' : 'บริษัท'),
+                  child: Text(value == 'date'
+                      ? 'วัน'
+                      : value == 'name'
+                          ? 'ชื่อ'
+                          : 'บริษัท'),
                 );
               }).toList(),
             ),
             SizedBox(height: 10),
-            Text('จำนวนรายชื่อผู้ติดต่อ: ${filteredFriends.length}', style: TextStyle(fontSize: 16)),
+            Text('จำนวนรายชื่อผู้ติดต่อ: ${filteredFriends.length}',
+                style: TextStyle(fontSize: 16)),
             SizedBox(height: 10),
             isLoading
                 ? Center(child: CircularProgressIndicator())
@@ -177,14 +195,18 @@ class _ContactScreenState extends State<ContactScreen> {
                             leading: CircleAvatar(
                               backgroundImage: user.profile != null
                                   ? NetworkImage(user.profile!)
-                                  : AssetImage('assets/default_profile.png') as ImageProvider,
+                                  : AssetImage('assets/default_profile.png')
+                                      as ImageProvider,
                             ),
                             title: Text('${user.firstname} ${user.lastname}'),
-                            subtitle: Text('อีเมล: ${user.email}\nตำแหน่ง: ${user.position}'),
+                            subtitle: Text(
+                                'อีเมล: ${user.email}\nตำแหน่ง: ${user.position}'),
                             trailing: IconButton(
                               icon: Icon(
                                 Icons.star,
-                                color: userWithStatus.status == "1" ? Colors.yellow : Colors.grey,
+                                color: userWithStatus.status == "1"
+                                    ? Colors.yellow
+                                    : Colors.grey,
                               ),
                               onPressed: () {
                                 if (userId != null) {
@@ -192,13 +214,17 @@ class _ContactScreenState extends State<ContactScreen> {
                                 }
                               },
                             ),
-                            onTap: () {
-                              Navigator.push(
+                            onTap: () async {
+                              final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => DetailPage(userId: user.id),
+                                  builder: (context) =>
+                                      DetailPage(userId: user.id),
                                 ),
                               );
+                              if (result != null && result as bool) {
+                                loadFriends(); // โหลดข้อมูลใหม่หากมีการลบเพื่อน
+                              }
                             },
                           ),
                         );
@@ -237,19 +263,19 @@ class _ContactScreenState extends State<ContactScreen> {
         onTap: (int index) {
           switch (index) {
             case 0:
-              Navigator.pushReplacementNamed(context, '/home');
+              context.go('/home');
               break;
             case 1:
-              Navigator.pushReplacementNamed(context, '/contact');
+              context.go('/contact');
               break;
             case 2:
-              Navigator.pushReplacementNamed(context, '/scan_qr');
+              context.go('/scan_qr');
               break;
             case 3:
-              Navigator.pushReplacementNamed(context, '/qr_code');
+              context.go('/qr_code');
               break;
             case 4:
-              Navigator.pushReplacementNamed(context, '/settings');
+              context.go('/settings');
               break;
           }
         },
@@ -263,5 +289,6 @@ class UserWithStatus {
   String status;
   String time;
 
-  UserWithStatus({required this.user, required this.status, required this.time});
+  UserWithStatus(
+      {required this.user, required this.status, required this.time});
 }

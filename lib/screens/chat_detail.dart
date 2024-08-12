@@ -5,6 +5,7 @@ import 'package:app_card/models/user.dart';
 import 'package:app_card/models/message.dart';
 import 'package:provider/provider.dart';
 import 'package:app_card/login_provider.dart';
+import 'package:intl/intl.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final User friend;
@@ -32,8 +33,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final loginProvider = Provider.of<LoginProvider>(context, listen: false);
     String userId = loginProvider.login!.id;
     messagesStream = chatService.messagesStream;
-    chatService.fetchMessages(userId);
-    print('Loading messages for user: $userId'); // เพิ่ม log
+    chatService.fetchMessages(userId, widget.friend.id);
   }
 
   void sendMessage() async {
@@ -42,14 +42,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     String messageContent = _messageController.text;
 
     if (messageContent.trim().isEmpty) {
-      return; // ถ้า messageContent ว่าง ให้ return ออกไป
+      return;
     }
 
     try {
-      print('Sending message: $messageContent');
       await chatService.createMessage(userId, widget.friend.id, messageContent);
-      _messageController.clear(); // ล้าง TextField
-      _scrollToBottom(); // เลื่อนลงมาล่างสุด
+      _messageController.clear();
+      _scrollToBottom();
     } catch (e) {
       print('Failed to send message: $e');
     }
@@ -62,6 +61,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         duration: Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
+    }
+  }
+
+  String formatTimestamp(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime).inDays;
+
+    if (difference == 0) {
+      return DateFormat('h:mm a').format(dateTime);
+    } else if (difference == 1) {
+      return 'Yesterday';
+    } else {
+      return DateFormat('MMM d, h:mm a').format(dateTime);
     }
   }
 
@@ -106,10 +118,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
                         child: Container(
                           margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-                          padding: const EdgeInsets.all(10.0),
+                          padding: const EdgeInsets.all(15.0),
                           decoration: BoxDecoration(
-                            color: isSender ? Colors.blue : Colors.grey[300],
-                            borderRadius: BorderRadius.circular(10),
+                            color: isSender ? Colors.blueAccent : Colors.grey[300],
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 5,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,7 +139,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                               ),
                               SizedBox(height: 5),
                               Text(
-                                message.dateTime.toString(),
+                                formatTimestamp(message.dateTime),
                                 style: TextStyle(color: isSender ? Colors.white70 : Colors.black54, fontSize: 10),
                               ),
                             ],

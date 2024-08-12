@@ -188,8 +188,9 @@ class RequestServices {
         return Status.fromJson(data);        
       }
       else {
+        final Map<String, dynamic> data = json.decode(response.body);
         print('Failed to fetch chk request. Status code: ${response.statusCode}');
-        return Status();
+        return Status.fromJson(data); 
       }
       
     } 

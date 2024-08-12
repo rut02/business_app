@@ -1,40 +1,47 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:app_card/login_provider.dart';
+import 'package:app_card/screens/login.dart';
 import 'package:app_card/screens/account.dart';
 import 'package:app_card/screens/friendstatus.dart';
 import 'package:app_card/screens/history.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userId = Provider.of<LoginProvider>(context, listen: false).login?.id;
+    final userRole =
+        Provider.of<LoginProvider>(context, listen: false).login?.role;
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Settings'),
+        title: Text('ตั้งค่า'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            ListTile(
-              leading: Icon(Icons.account_circle),
-              title: Text('Account'),
-              onTap: () {
-                // Handle account settings
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AccountScreen()),
-                );
-              },
-            ),
-            Divider(),
+            if (userRole !=
+                'employee') // ตรวจสอบว่าบทบาทของผู้ใช้ไม่ใช่ 'employee'
+              ListTile(
+                leading: Icon(Icons.account_circle),
+                title: Text('บัญชี'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AccountScreen()),
+                  );
+                },
+              ),
+            if (userRole !=
+                'employee') // ตรวจสอบว่าบทบาทของผู้ใช้ไม่ใช่ 'employee'
+              Divider(),
             ListTile(
               leading: Icon(Icons.info),
-              title: Text('History'),
+              title: Text('ประวัติ'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -44,30 +51,55 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
             Divider(),
+            // ListTile(
+            //   leading: Icon(Icons.bar_chart),
+            //   title: Text('สถิติเพื่อน'),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //           builder: (context) => FriendStatsScreen(userId: userId!)),
+            //     );
+            //   },
+            // ),
+            // Divider(),
             ListTile(
-              leading: Icon(Icons.bar_chart),
-              title: Text('Friend Stats'),
+              leading: Icon(Icons.logout), // ไอคอนสำหรับออกจากระบบ
+              title: Text('ออกจากระบบ'), // ข้อความสำหรับออกจากระบบ
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => FriendStatsScreen(userId: userId!)),
+                // แสดงกล่องโต้ตอบยืนยันก่อนออกจากระบบ
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('ออกจากระบบ'),
+                      content: Text('คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?'),
+                      actions: <Widget>[
+                        TextButton(
+                          child: Text('ยกเลิก'),
+                          onPressed: () {
+                            Navigator.of(context).pop(); // ปิดกล่องโต้ตอบ
+                          },
+                        ),
+                        TextButton(
+                          child: Text('ออกจากระบบ'),
+                          onPressed: () {
+                            // ตรรกะการออกจากระบบที่นี่
+                            Provider.of<LoginProvider>(context, listen: false)
+                                .logout();
+
+                            // นำทางไปยังหน้าจอล็อกอิน
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => LoginScreen()),
+                            );
+                          },
+                        ),
+                      ],
+                    );
+                  },
                 );
-              },
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.logout), // Icon for logout
-              title: Text('Logout'), // Text for logout
-              onTap: () {
-                // Logout logic here
-                // Example: Clear user session, navigate to login screen
-
-                // For example, if using Provider for user state management
-                Provider.of<LoginProvider>(context, listen: false).logout();
-
-                // Navigate to login screen
-                Navigator.pushReplacementNamed(context, '/');
               },
             ),
             Divider(),
@@ -78,23 +110,23 @@ class SettingsScreen extends StatelessWidget {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'HOME',
+            label: 'หน้าหลัก',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.contacts),
-            label: 'CONTACT',
+            label: 'ติดต่อ',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.qr_code_scanner),
-            label: 'SCAN QR',
+            label: 'สแกน QR',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.qr_code),
-            label: 'QR CODE',
+            label: 'QR โค้ด',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: 'SETTINGS',
+            label: 'ตั้งค่า',
           ),
         ],
         currentIndex: 4,
@@ -103,19 +135,19 @@ class SettingsScreen extends StatelessWidget {
         onTap: (int index) {
           switch (index) {
             case 0:
-              Navigator.pushReplacementNamed(context, '/home');
+              context.go('/home');
               break;
             case 1:
-              Navigator.pushReplacementNamed(context, '/contact');
+              context.go('/contact');
               break;
             case 2:
-              Navigator.pushReplacementNamed(context, '/scan_qr');
+              context.go('/scan_qr');
               break;
             case 3:
-              Navigator.pushReplacementNamed(context, '/qr_code');
+              context.go('/qr_code');
               break;
             case 4:
-              // No action needed when tapping on current tab (Settings)
+              context.go('/settings');
               break;
           }
         },

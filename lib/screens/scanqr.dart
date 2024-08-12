@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -37,13 +38,21 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
 
     if (response.statusCode == 200) {
       final result = json.decode(responseData);
-      final String scannedId = result['result'];
+      final String scannedCode = result['result'];
+      final String expectedPrefix = 'https://web-deep.onrender.com/request/';
+
+      if (!scannedCode.startsWith(expectedPrefix)) {
+        await _controller?.pauseCamera(); // หยุดกล้องก่อนแสดงข้อความแจ้งเตือน
+        _showErrorDialog('รูปแบบ QR โค้ดไม่ถูกต้อง');
+        return;
+      }
+
+      final String scannedId = scannedCode.substring(expectedPrefix.length);
       final String currentUserId = Provider.of<LoginProvider>(context, listen: false).login?.id ?? '';
 
       if (scannedId == currentUserId) {
-        setState(() {
-          _scanResult = 'คุณไม่สามารถสแกน QR โค้ดของตัวเองได้';
-        });
+        await _controller?.pauseCamera(); // หยุดกล้องก่อนแสดงข้อความแจ้งเตือน
+        _showErrorDialog('คุณไม่สามารถสแกน QR โค้ดของตัวเองได้');
         return;
       }
 
@@ -70,7 +79,16 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
     controller.scannedDataStream.listen((scanData) async {
       if (_isScanning) return;
 
-      final String scannedId = scanData.code ?? '';
+      final String scannedCode = scanData.code ?? '';
+      final String expectedPrefix = 'https://web-deep.onrender.com/request/';
+
+      if (!scannedCode.startsWith(expectedPrefix)) {
+        await _controller?.pauseCamera(); // Pause the camera before showing the dialog
+        _showErrorDialog('รูปแบบ QR โค้ดไม่ถูกต้อง');
+        return;
+      }
+
+      final String scannedId = scannedCode.substring(expectedPrefix.length);
       final String currentUserId = Provider.of<LoginProvider>(context, listen: false).login?.id ?? '';
 
       if (scannedId == currentUserId) {
@@ -104,6 +122,28 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
     });
   }
 
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('ข้อผิดพลาด'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text('ตกลง'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    ).then((_) async {
+      await _controller?.resumeCamera(); // เริ่มกล้องอีกครั้งหลังจากปิดข้อความแจ้งเตือน
+    });
+  }
+
   @override
   void dispose() {
     _controller?.dispose();
@@ -117,43 +157,40 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
         automaticallyImplyLeading: false,
         title: Text('หน้าสแกน QR'),
       ),
-      body: SingleChildScrollView(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
-            Container(
-              height: 300,
-              child: QRView(
-                key: _qrKey,
-                onQRViewCreated: _onQRViewCreated,
+            Card(
+              elevation: 4,
+              child: Container(
+                height: 420,
+                child: QRView(
+                  key: _qrKey,
+                  onQRViewCreated: _onQRViewCreated,
+                ),
               ),
             ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    'สแกน QR โค้ด',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_controller != null) {
-                        _controller!.pauseCamera();
-                      }
-                      pickImage(context);
-                    },
-                    child: Text('เลือกภาพจากแกลเลอรี'),
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    'ผลลัพธ์การสแกน: $_scanResult',
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+            // SizedBox(height: 20),
+       
+            SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                if (_controller != null) {
+                  _controller!.pauseCamera();
+                }
+                pickImage(context);
+              },
+              icon: Icon(Icons.image),
+              label: Text('เลือกภาพจากแกลเลอรี'),
+            ),
+            SizedBox(height: 20),
+            Text(
+              'ผลลัพธ์การสแกน: $_scanResult',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.black54,
+                fontSize: 16,
               ),
             ),
           ],
@@ -192,19 +229,19 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
 
           switch (index) {
             case 0:
-              Navigator.pushReplacementNamed(context, '/home');
+              context.go('/home');
               break;
             case 1:
-              Navigator.pushReplacementNamed(context, '/contact');
+              context.go('/contact');
               break;
             case 2:
-              Navigator.pushReplacementNamed(context, '/scan_qr');
+              context.go('/scan_qr');
               break;
             case 3:
-              Navigator.pushReplacementNamed(context, '/qr_code');
+              context.go('/qr_code');
               break;
             case 4:
-              Navigator.pushReplacementNamed(context, '/settings');
+              context.go('/settings');
               break;
           }
         },

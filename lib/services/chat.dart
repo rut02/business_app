@@ -39,10 +39,10 @@ class ChatService {
     print('Message added, total messages: ${_allMessages.length}'); // เพิ่ม log
   }
 
-  Future<void> fetchMessages(String userId) async {
+  Future<void> fetchMessages(String userId, String friendId) async {
     try {
-      List<Message> sentMessages = await getMessageBySender(userId);
-      List<Message> receivedMessages = await getMessageByReceiver(userId);
+      List<Message> sentMessages = await getMessageBySender(userId, friendId);
+      List<Message> receivedMessages = await getMessageByReceiver(userId, friendId);
       _allMessages = [...sentMessages, ...receivedMessages];
       _allMessages.sort((a, b) => a.dateTime.compareTo(b.dateTime)); // เปลี่ยน DateTime เป็น dateTime
       _messagesController.add(_allMessages);
@@ -53,9 +53,9 @@ class ChatService {
     }
   }
 
-  Future<List<Message>> getMessageBySender(String userId) async {
+  Future<List<Message>> getMessageBySender(String userId, String friendId) async {
     try {
-      final response = await http.get(Uri.parse('$API/messages/sender/$userId'));
+      final response = await http.get(Uri.parse('$API/messages/sender/$userId/$friendId'));
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         return data.isEmpty ? [] : data.map((message) => Message.fromJson(message)).toList();
@@ -67,9 +67,9 @@ class ChatService {
     }
   }
 
-  Future<List<Message>> getMessageByReceiver(String userId) async {
+  Future<List<Message>> getMessageByReceiver(String userId, String friendId) async {
     try {
-      final response = await http.get(Uri.parse('$API/messages/receiver/$userId'));
+      final response = await http.get(Uri.parse('$API/messages/receiver/$userId/$friendId'));
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         return data.isEmpty ? [] : data.map((message) => Message.fromJson(message)).toList();
@@ -96,6 +96,23 @@ class ChatService {
       print('Failed to create message: $e'); // เพิ่ม log
     }
   }
+  Future<Message?> fetchAndGetLastMessage(String userId, String friendId) async {
+  try {
+    // ดึงข้อความทั้งหมด
+    await fetchMessages(userId, friendId);
+
+    // ตรวจสอบว่ามีข้อความใน _allMessages หรือไม่
+    if (_allMessages.isNotEmpty) {
+      // คืนค่าข้อความล่าสุด (ข้อความที่มีวันที่และเวลาล่าสุด)
+      return _allMessages.last;
+    }
+  } catch (e) {
+    print('Error fetching or getting last message: $e');
+  }
+
+  return null; // ถ้าไม่มีข้อความหรือเกิดข้อผิดพลาด
+}
+
 
   void disconnect() {
     _channel.sink.close();

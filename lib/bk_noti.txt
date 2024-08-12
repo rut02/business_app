@@ -53,8 +53,6 @@ class NotificationService {
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print('Message clicked!');
-      // _showNotification(message);
-      print('Received message while in the background: ${message.notification?.body}');
       Navigator.of(context).push(
         MaterialPageRoute(builder: (context) => NotificationsScreen()),
       );
@@ -63,7 +61,6 @@ class NotificationService {
     // Handle when the app is opened from a terminated state
     FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
       if (message != null) {
-        // _showNotification(message);
         print('App opened from terminated state!');
         Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => NotificationsScreen()),
@@ -80,7 +77,7 @@ class NotificationService {
     print("Message data: ${message.notification?.body}");
   }
 
-  Future<void> _showNotification(RemoteMessage message) async {
+  Future<void> _showNotification(RemoteMessage message) async { 
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
             'your_channel_id', 'your_channel_name',
@@ -92,8 +89,9 @@ class NotificationService {
         payload: 'item x');  // ส่ง payload เพื่อบอกว่าให้ไปหน้าไหน
   }
 
-  Future initPushNotification() async {
+  Future<void> initPushNotification() async {
     FirebaseMessaging.instance.getInitialMessage().then(handleNotification);
     FirebaseMessaging.onMessageOpenedApp.listen(handleNotification);
   }
 }
+

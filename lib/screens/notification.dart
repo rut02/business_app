@@ -1,5 +1,6 @@
 import 'package:app_card/services/friends.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:app_card/models/request.dart';
 import 'package:app_card/models/user.dart';
@@ -71,7 +72,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('NOTIFICATIONS'),
+        title: Text('การแจ้งเตือน'),
       ),
       body: pendingRequests.isEmpty
           ? Center(child: Text('ไม่มีคำขอรอดำเนินการ'))
@@ -154,22 +155,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         currentIndex: 0,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
-        onTap: (int index) {
+               onTap: (int index) {
           switch (index) {
             case 0:
-              Navigator.pushReplacementNamed(context, '/home');
+              context.go('/home');
               break;
             case 1:
-              Navigator.pushReplacementNamed(context, '/contact');
+              context.go('/contact');
               break;
             case 2:
-              Navigator.pushReplacementNamed(context, '/scan_qr');
+              context.go('/scan_qr');
               break;
             case 3:
-              Navigator.pushReplacementNamed(context, '/qr_code');
+              context.go('/qr_code');
               break;
             case 4:
-              Navigator.pushReplacementNamed(context, '/settings');
+              context.go('/settings');
               break;
           }
         },

@@ -29,9 +29,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   void loadContact() async {
     try {
+      print(widget.contactId);
       var snapshot = await userService.getUserByid(widget.contactId);
 
-      if (snapshot != null) {
+      if (snapshot != null && snapshot.firstname != null && snapshot.lastname != null) {
         setState(() {
           contactName = snapshot.firstname + " " + snapshot.lastname;
         });
@@ -39,9 +40,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         setState(() {
           contactName = 'ไม่พบผู้ใช้';
         });
+        // แสดง Dialog เมื่อไม่พบผู้ใช้
+        _showUserNotFoundDialog();
       }
     } catch (e) {
       print('Error loading user data: $e');
+      setState(() {
+        contactName = 'ไม่พบผู้ใช้';
+      });
+      _showUserNotFoundDialog(); // แสดง Dialog ในกรณีที่เกิดข้อผิดพลาด
     }
   }
 
@@ -56,7 +63,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Future<void> addRequest(String userId) async {
     try {
       await requestsService.add_request(userId, widget.contactId);
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Request added successfully!'),
@@ -66,6 +73,27 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     } catch (e) {
       print('Error adding request: $e');
     }
+  }
+
+  void _showUserNotFoundDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('User Not Found'),
+          content: Text('ไม่พบผู้ใช้ที่คุณกำลังค้นหา'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('ตกลง'),
+              onPressed: () {
+                Navigator.of(context).pop(); // ปิด Dialog
+                Navigator.of(context).pop(); // ย้อนกลับไปหน้าที่แล้ว
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -91,9 +119,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       strokeWidth: 4.0, // ปรับแต่งความกว้างของวงกลมโหลด
                     ),
                   );
-                } else if (snapshot.hasError) {
+                } else if (snapshot.hasError || contactName == 'ไม่พบผู้ใช้') {
                   return Center(
-                    child: Text('Error loading data: ${snapshot.error}'),
+                    child: Text('ไม่พบผู้ใช้'),
                   );
                 } else {
                   status = snapshot.data;
@@ -108,7 +136,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             : () {
                                 if (status != null) {
                                   addRequest(loginProvider.login!.id);
-                                  userService.sendNotification(widget.contactId, "มีคำขอใหม่", "contactName");
+                                  userService.sendNotification(widget.contactId, "มีคำขอใหม่ จาก", "$contactName");
                                   print("object");
                                   print(widget.contactId);
                                 } else {
@@ -127,4 +155,4 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
     );
   }
-}
+} 

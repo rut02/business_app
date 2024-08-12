@@ -104,37 +104,37 @@ class UserService {
             'Failed to authenticate user. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error authenticating user: $e');
+      print("Error authenticating user: $e");
+      throw Exception('โปรดเชื่อมต่ออินเทอร์เน็ต');
     }
   }
 
-  Future<User> getUserByid(String uid) async {
-    try {
-      final apiUrl = Uri.parse(api + '/user/' + uid);
-      final response = await http.get(apiUrl);
-      print(response.statusCode);
-      print("from users.dart");
-      print(uid);
-      // print(response.body);
+Future<User> getUserByid(String uid) async {
+  try {
+    final apiUrl = Uri.parse(api + '/user/' + uid);
+    final response = await http.get(apiUrl);
+    print(response.statusCode);
+    print("from users.dart");
+    print(uid);
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic>? data = json.decode(response.body);
+    if (response.statusCode == 200) {
+      final Map<String, dynamic>? data = json.decode(response.body);
 
-        if (data != null) {
-          return User.fromJson(data);
-        } else {
-          print('ไม่สามารถแปลงข้อมูลที่ได้รับมาได้');
-          return User();
-        }
+      if (data != null) {
+        return User.fromJson(data);
       } else {
-        print('ไม่สามารถดึงข้อมูลผู้ใช้ได้. รหัสสถานะ: ${response.statusCode}');
+        print('ไม่สามารถแปลงข้อมูลที่ได้รับมาได้');
         return User();
       }
-    } catch (e) {
-      print("ข้อผิดพลาดในการดึงข้อมูลผู้ใช้: $e");
+    } else {
+      print('ไม่สามารถดึงข้อมูลผู้ใช้ได้. รหัสสถานะ: ${response.statusCode}');
       return User();
     }
+  } catch (e) {
+    print("ข้อผิดพลาดในการดึงข้อมูลผู้ใช้: $e");
+    return User();
   }
+}
 
   Future<ProfileImage> uploadProfileImage(
       String uid, String folder, String imagePath) async {
@@ -237,7 +237,7 @@ class UserService {
       final response = await http.post(
         apiUrl,
         body: json.encode(
-            {'userId': uid, 'MessageTitle': title, 'MessageBody': body}),
+            {'userId': uid, 'messageTitle': title, 'messageBody': body}),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -287,6 +287,7 @@ class UserService {
 
       if (response.statusCode == 200) {
         print('User updated successfully');
+        await create_card(uid);
       } else {
         print('Failed to update user. Status code: ${response.statusCode}');
       }

@@ -167,38 +167,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildTextField(
-      TextEditingController controller, String labelText, IconData icon,
-      {TextInputType keyboardType = TextInputType.text,
-      bool isEmail = false}) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon),
-        labelText: labelText,
-        border: OutlineInputBorder(),
-        focusedBorder: OutlineInputBorder(
-          borderSide:
-              BorderSide(color: Theme.of(context).primaryColor, width: 2.0),
-        ),
+ Widget _buildTextField(
+    TextEditingController controller, String labelText, IconData icon,
+    {TextInputType keyboardType = TextInputType.text,
+    bool isEmail = false}) {
+  return TextFormField(
+    controller: controller,
+    decoration: InputDecoration(
+      prefixIcon: Icon(icon),
+      labelText: labelText,
+      border: OutlineInputBorder(),
+      focusedBorder: OutlineInputBorder(
+        borderSide:
+            BorderSide(color: Theme.of(context).primaryColor, width: 2.0),
       ),
-      keyboardType: keyboardType,
-      enabled: !_isSubmitting,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'โปรดกรอก$labelText';
-        }
-        if (isEmail && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-          return 'โปรดกรอกอีเมลที่ถูกต้อง';
-        }
-        if (controller == phoneController &&
-            !RegExp(r'^\d{10}$').hasMatch(value)) {
-          return 'โปรดกรอกเบอร์โทรศัพท์ที่ถูกต้อง';
-        }
-        return null;
-      },
-    );
-  }
+    ),
+    keyboardType: keyboardType,
+    enabled: !_isSubmitting,
+    validator: (value) {
+      if (value == null || value.isEmpty) {
+        return 'โปรดกรอก$labelText';
+      }
+      if (isEmail && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+        return 'โปรดกรอกอีเมลที่ถูกต้อง';
+      }
+      if (controller == phoneController &&
+          !RegExp(r'^\d{10}$').hasMatch(value)) {
+        return 'โปรดกรอกเบอร์โทรศัพท์ที่ถูกต้อง';
+      }
+      if ((controller == firstNameController || controller == lastNameController) &&
+          RegExp(r'\d').hasMatch(value)) {
+        return 'โปรดอย่ากรอกตัวเลขใน$labelText';
+      }
+      return null;
+    },
+  );
+}
 
   Widget _buildPasswordField(
       TextEditingController controller, String labelText) {

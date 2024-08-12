@@ -1,10 +1,12 @@
+import 'package:app_card/screens/login.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:app_card/login_provider.dart';
 import 'package:app_card/models/user.dart';
 import 'package:app_card/screens/channgePass.dart';
 import 'package:app_card/screens/editAccount.dart';
 import 'package:app_card/services/users.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:app_card/login_provider.dart';
 
 class AccountScreen extends StatefulWidget {
   @override
@@ -39,7 +41,7 @@ class _AccountScreenState extends State<AccountScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
             appBar: AppBar(
-              title: Text('Account'),
+              title: Text('บัญชี'),
             ),
             body: Center(
               child: CircularProgressIndicator(),
@@ -48,26 +50,26 @@ class _AccountScreenState extends State<AccountScreen> {
         } else if (snapshot.hasError) {
           return Scaffold(
             appBar: AppBar(
-              title: Text('Account'),
+              title: Text('บัญชี'),
             ),
             body: Center(
-              child: Text('Error: ${snapshot.error}'),
+              child: Text('ข้อผิดพลาด: ${snapshot.error}'),
             ),
           );
         } else if (!snapshot.hasData) {
           return Scaffold(
             appBar: AppBar(
-              title: Text('Account'),
+              title: Text('บัญชี'),
             ),
             body: Center(
-              child: Text('No account data found'),
+              child: Text('ไม่พบข้อมูลบัญชี'),
             ),
           );
         } else {
           final user = snapshot.data!;
           return Scaffold(
             appBar: AppBar(
-              title: Text('Account'),
+              title: Text('บัญชี'),
             ),
             body: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -82,12 +84,13 @@ class _AccountScreenState extends State<AccountScreen> {
                   Divider(),
                   ListTile(
                     leading: Icon(Icons.edit),
-                    title: Text('Edit Account Details'),
+                    title: Text('แก้ไขรายละเอียดบัญชี'),
                     onTap: () async {
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => EditAccountScreen()),
+                          builder: (context) => EditAccountScreen(user: user),
+                        ),
                       );
                       if (result == true) {
                         _refreshUserData();
@@ -97,7 +100,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   Divider(),
                   ListTile(
                     leading: Icon(Icons.lock),
-                    title: Text('Change Password'),
+                    title: Text('เปลี่ยนรหัสผ่าน'),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -109,11 +112,44 @@ class _AccountScreenState extends State<AccountScreen> {
                   Divider(),
                   ListTile(
                     leading: Icon(Icons.logout),
-                    title: Text('Logout'),
+                    title: Text('ออกจากระบบ'),
                     onTap: () {
-                      Provider.of<LoginProvider>(context, listen: false)
-                          .logout();
-                      Navigator.pushReplacementNamed(context, '/');
+                      // แสดงกล่องโต้ตอบยืนยันก่อนออกจากระบบ
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('ออกจากระบบ'),
+                            content: Text('คุณแน่ใจหรือไม่ที่จะออกจากระบบ?'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text('ยกเลิก'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(); // ปิดกล่องโต้ตอบ
+                                },
+                              ),
+                              TextButton(
+                                child: Text('ออกจากระบบ'),
+                                onPressed: () {
+                                  // ลงชื่อออกที่นี่
+                                  Provider.of<LoginProvider>(context,
+                                          listen: false)
+                                      .logout();
+
+                                  // นำทางไปยังหน้าลงชื่อเข้าใช้
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LoginScreen(),
+                                    ),
+                                    (Route<dynamic> route) => false,
+                                  );
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     },
                   ),
                   Divider(),

@@ -1,5 +1,6 @@
 import 'package:app_card/login_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/services.dart';
@@ -19,7 +20,7 @@ class QRCodeScreen extends StatelessWidget {
         }
       }
     } catch (e) {
-      print('Error saving QR code: $e');
+      print('ข้อผิดพลาดในการบันทึก QR code: $e');
     }
     return false;
   }
@@ -28,12 +29,12 @@ class QRCodeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final loginProvider = Provider.of<LoginProvider>(context);
     final userId = loginProvider.login?.id ?? 'Unknown';
-    final appLink = userId; // 'https://yourapp.com/requests?userId=$userId';
+    final appLink =  'https://web-deep.onrender.com/request/$userId';
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('QR CODE PAGE'),
+        title: Text('หน้า QR CODE'),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -41,7 +42,7 @@ class QRCodeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                'YOUR QR CODE',
+                'QR CODE ของคุณ',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -66,11 +67,11 @@ class QRCodeScreen extends StatelessWidget {
                   Clipboard.setData(ClipboardData(text: appLink));
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Link copied to clipboard!'),
+                      content: Text('ลิงก์ถูกคัดลอกไปยังคลิปบอร์ด!'),
                     ),
                   );
                 },
-                child: Text('Share Link'),
+                child: Text('แชร์ลิงก์'),
               ),
               SizedBox(height: 10),
               ElevatedButton(
@@ -78,15 +79,15 @@ class QRCodeScreen extends StatelessWidget {
                   final success = await saveQRCode();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(success ? 'QR code saved to gallery!' : 'Failed to save QR code.'),
+                      content: Text(success ? 'QR code ถูกบันทึกไปยังแกลเลอรี!' : 'ล้มเหลวในการบันทึก QR code.'),
                     ),
                   );
                 },
-                child: Text('Save QR Code'),
+                child: Text('บันทึก QR Code'),
               ),
               SizedBox(height: 20),
               Text(
-                'This is where your QR code will appear.',
+                'นี่คือที่ที่ QR code ของคุณจะปรากฏ',
                 textAlign: TextAlign.center,
               ),
             ],
@@ -97,15 +98,15 @@ class QRCodeScreen extends StatelessWidget {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'HOME',
+            label: 'หน้าหลัก',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.contacts),
-            label: 'CONTACT',
+            label: 'ติดต่อ',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.qr_code_scanner),
-            label: 'SCAN QR',
+            label: 'สแกน QR',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.qr_code),
@@ -113,7 +114,7 @@ class QRCodeScreen extends StatelessWidget {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: 'SETTINGS',
+            label: 'ตั้งค่า',
           ),
         ],
         currentIndex: 3,
@@ -122,19 +123,19 @@ class QRCodeScreen extends StatelessWidget {
         onTap: (int index) {
           switch (index) {
             case 0:
-              Navigator.pushReplacementNamed(context, '/home');
+              context.go('/home');
               break;
             case 1:
-              Navigator.pushReplacementNamed(context, '/contact');
+              context.go('/contact');
               break;
             case 2:
-              Navigator.pushReplacementNamed(context, '/scan_qr');
+              context.go('/scan_qr');
               break;
             case 3:
-              Navigator.pushReplacementNamed(context, '/qr_code');
+              context.go('/qr_code');
               break;
             case 4:
-              Navigator.pushReplacementNamed(context, '/settings');
+              context.go('/settings');
               break;
           }
         },

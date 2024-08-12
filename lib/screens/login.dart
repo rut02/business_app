@@ -2,8 +2,8 @@ import 'package:app_card/login_provider.dart';
 import 'package:app_card/main.dart';
 import 'package:app_card/models/login.dart';
 import 'package:app_card/services/users.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -69,7 +69,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
                       onPressed: () {
                         setState(() {
@@ -100,68 +102,91 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: isLoading ? null : () async {
-                      final String email = emailController.text.trim();
-                      final String password = passwordController.text.trim();
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            final String email = emailController.text.trim();
+                            final String password =
+                                passwordController.text.trim();
 
-                      if (!isValidEmail(email)) {
-                        setState(() {
-                          errorMessage = 'รูปแบบอีเมลไม่ถูกต้อง';
-                        });
-                        return;
-                      }
+                            // ตรวจสอบค่าว่างในทุกช่อง
+                            if (email.isEmpty || password.isEmpty) {
+                              setState(() {
+                                errorMessage = 'กรุณากรอกข้อมูลให้ครบถ้วน';
+                              });
+                              return;
+                            }
 
-                      if (!isValidPassword(password)) {
-                        setState(() {
-                          errorMessage = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
-                        });
-                        return;
-                      }
+                            if (!isValidEmail(email)) {
+                              setState(() {
+                                errorMessage = 'รูปแบบอีเมลไม่ถูกต้อง';
+                              });
+                              return;
+                            }
 
-                      setState(() {
-                        isLoading = true;
-                        errorMessage = '';
-                      });
+                            if (!isValidPassword(password)) {
+                              setState(() {
+                                errorMessage =
+                                    'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+                              });
+                              return;
+                            }
 
-                      try {
-                        final Login result = await userService.authenticateUser(email, password);
+                            setState(() {
+                              isLoading = true;
+                              errorMessage = '';
+                            });
 
-                        if (result.role == "employee" || result.role == "user") {
-                          Provider.of<LoginProvider>(context, listen: false).setLogin(result);
+                            try {
+                              final Login result = await userService
+                                  .authenticateUser(email, password);
 
-                          // บันทึกข้อมูลลง SharedPreferences
-                          SharedPreferences prefs = await SharedPreferences.getInstance();
-                          await prefs.setString('loginData', jsonEncode(result.toJson()));
-                          
-                          Navigator.pushReplacementNamed(context, '/home');
-                        } else {
-                          setState(() {
-                            errorMessage = 'เข้าสู่ระบบไม่สำเร็จ: บทบาทไม่ถูกต้อง';
-                          });
-                        }
-                      } catch (error) {
-                        setState(() {
-                          errorMessage = 'เข้าสู่ระบบไม่สำเร็จ: ${error.toString()}';
-                        });
+                              if (result.role == "employee" ||
+                                  result.role == "user") {
+                                Provider.of<LoginProvider>(context,
+                                        listen: false)
+                                    .setLogin(result);
 
-                        // Check for 401 status code specifically
-                        if (error.toString().contains('401')) {
-                          setState(() {
-                            errorMessage = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
-                          });
-                        }
-                      } finally {
-                        setState(() {
-                          isLoading = false;
-                        });
-                      }
-                    },
+                                // บันทึกข้อมูลลง SharedPreferences
+                                SharedPreferences prefs =
+                                    await SharedPreferences.getInstance();
+                                await prefs.setString(
+                                    'loginData', jsonEncode(result.toJson()));
+
+                                context.go('/home');
+                              } else {
+                                setState(() {
+                                  errorMessage =
+                                      'เข้าสู่ระบบไม่สำเร็จ: บทบาทไม่ถูกต้อง';
+                                });
+                              }
+                            } catch (error) {
+                              setState(() {
+                                if (error
+                                    .toString()
+                                    .contains('No internet connection')) {
+                                  errorMessage =
+                                      'กรุณาเชื่อมต่ออินเทอร์เน็ตเพื่อเข้าสู่ระบบ';
+                                } else if (error.toString().contains('401')) {
+                                  errorMessage = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+                                } else {
+                                  errorMessage =
+                                      'เข้าสู่ระบบไม่สำเร็จ โปรดเชื่อมต่ออินเทอร์เน็ต';
+                                }
+                              });
+                            } finally {
+                              setState(() {
+                                isLoading = false;
+                              });
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                     ),
                     child: isLoading
                         ? const CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           )
                         : const Text('Login'),
                   ),
@@ -175,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: isLoading
                           ? null
                           : () {
-                              Navigator.pushReplacementNamed(context, '/register');
+                              context.go('/register');
                             },
                       child: const Text('Create account'),
                     ),
