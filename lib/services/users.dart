@@ -170,6 +170,7 @@ Future<User> getUserByid(String uid) async {
       // Check the response status
       if (response.statusCode == 200) {
         print('Profile image uploaded successfully');
+        await create_card(uid);
 
         // Parse the response body
         var responseBody = await response.stream.bytesToString();

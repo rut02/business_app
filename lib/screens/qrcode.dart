@@ -85,11 +85,7 @@ class QRCodeScreen extends StatelessWidget {
                 },
                 child: Text('บันทึก QR Code'),
               ),
-              SizedBox(height: 20),
-              Text(
-                'นี่คือที่ที่ QR code ของคุณจะปรากฏ',
-                textAlign: TextAlign.center,
-              ),
+                            
             ],
           ),
         ),

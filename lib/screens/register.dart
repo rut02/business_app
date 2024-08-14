@@ -440,7 +440,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           }
 
           _clearFormFields();
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => LoginScreen()),
           );

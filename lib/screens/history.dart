@@ -233,12 +233,15 @@ class _FriendStatsTabState extends State<FriendStatsTab> {
                         barTouchData: BarTouchData(
                           enabled: true,
                           touchTooltipData: BarTouchTooltipData(
-                            // tooltipBgColor: Colors.blueAccent,
+                            // tooltipBgColor: Colors.transparent, // กำหนดพื้นหลังโปร่งใส
                             getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                              String label = group.x == 0 ? 'เพิ่ม' : 'ลบ';
                               return BarTooltipItem(
-                                '$label: ${rod.toY.toInt()}',
-                                TextStyle(color: Colors.white),
+                                '${rod.toY.toInt()}', // แสดงเฉพาะตัวเลข
+                                TextStyle(
+                                  color: Colors
+                                      .black, // กำหนดสีของตัวอักษร (ถ้าต้องการเปลี่ยนสี)
+                                  fontWeight: FontWeight.bold,
+                                ),
                               );
                             },
                           ),
@@ -301,7 +304,7 @@ class _HistoryTabState extends State<HistoryTab> {
   Future<List<History>> _fetchHistory() async {
     final response = await http.get(Uri.parse(
         'https://business-api-638w.onrender.com/history/user/${widget.userId}'));
-    
+
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
       return data.map((item) => History.fromJson(item)).toList();
@@ -393,16 +396,15 @@ class HistoryListItem extends StatelessWidget {
             history.action == 'add_friend'
                 ? Icons.person_add
                 : Icons.person_remove,
-            color: history.action == 'add_friend'
-                ? Colors.green
-                : Colors.red,
+            color: history.action == 'add_friend' ? Colors.green : Colors.red,
           ),
           title: Text(
             '${history.action == 'add_friend' ? 'เพิ่ม' : 'ลบ'} เพื่อน: ${snapshot.connectionState == ConnectionState.waiting ? 'กำลังโหลด...' : snapshot.data}',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           subtitle: Text(
-            DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.parse(history.timestamp)),
+            DateFormat('dd MMM yyyy, hh:mm a')
+                .format(DateTime.parse(history.timestamp)),
           ),
         );
       },

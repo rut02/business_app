@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:app_card/screens/login.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,10 @@ import 'package:app_card/models/user.dart';
 import 'package:app_card/screens/channgePass.dart';
 import 'package:app_card/screens/editAccount.dart';
 import 'package:app_card/services/users.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'dart:convert';
 
 class AccountScreen extends StatefulWidget {
   @override
@@ -15,6 +21,7 @@ class AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<AccountScreen> {
   Future<User>? _userFuture;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -33,6 +40,19 @@ class _AccountScreenState extends State<AccountScreen> {
     });
   }
 
+  Future<void> _showChangeProfileImageDialog() async {
+    final userId = Provider.of<LoginProvider>(context, listen: false).login?.id;
+    final image = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null && userId != null) {
+      final result = await UserService().uploadProfileImage(userId, 'profile', image.path);
+      if (result != null) {
+        _refreshUserData();
+      }
+    }
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<User>(
@@ -77,7 +97,18 @@ class _AccountScreenState extends State<AccountScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ListTile(
-                    leading: Icon(Icons.account_circle),
+                    leading: GestureDetector(
+                      onTap: _showChangeProfileImageDialog,
+                      child: CircleAvatar(
+                        radius: 30,
+                        backgroundImage: user.profile.isNotEmpty
+                            ? NetworkImage(user.profile)
+                            : null,
+                        child: user.profile.isEmpty
+                            ? Icon(Icons.account_circle, size: 30)
+                            : null,
+                      ),
+                    ),
                     title: Text('${user.firstname} ${user.lastname}'),
                     subtitle: Text(user.email),
                   ),

@@ -155,28 +155,37 @@ class _ContactScreenState extends State<ContactScreen> {
               ),
             ),
             SizedBox(height: 10),
-            DropdownButton<String>(
-              hint: Text('เรียงลำดับโดย'),
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  sortFriends(newValue);
-                }
-              },
-              items: <String>['date', 'name', 'company']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value == 'date'
-                      ? 'วัน'
-                      : value == 'name'
-                          ? 'ชื่อ'
-                          : 'บริษัท'),
-                );
-              }).toList(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'จำนวนรายชื่อผู้ติดต่อ: ${filteredFriends.length}',
+                  style: TextStyle(fontSize: 16),
+                ),
+                PopupMenuButton<String>(
+                  onSelected: (String value) {
+                    sortFriends(value);
+                  },
+                  itemBuilder: (BuildContext context) {
+                    return [
+                      PopupMenuItem(
+                        value: 'date',
+                        child: Text('วัน'),
+                      ),
+                      PopupMenuItem(
+                        value: 'name',
+                        child: Text('ชื่อ'),
+                      ),
+                      PopupMenuItem(
+                        value: 'company',
+                        child: Text('บริษัท'),
+                      ),
+                    ];
+                  },
+                  icon: Icon(Icons.sort),
+                ),
+              ],
             ),
-            SizedBox(height: 10),
-            Text('จำนวนรายชื่อผู้ติดต่อ: ${filteredFriends.length}',
-                style: TextStyle(fontSize: 16)),
             SizedBox(height: 10),
             isLoading
                 ? Center(child: CircularProgressIndicator())
