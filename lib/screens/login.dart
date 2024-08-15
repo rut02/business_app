@@ -1,6 +1,7 @@
 import 'package:app_card/login_provider.dart';
 import 'package:app_card/main.dart';
 import 'package:app_card/models/login.dart';
+import 'package:app_card/screens/register.dart';
 import 'package:app_card/services/users.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -81,14 +82,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: isLoading ? null : () {},
-                    child: const Text('Forgot password?'),
-                  ),
-                ),
+                // const SizedBox(height: 10),
+                // Align(
+                //   alignment: Alignment.centerRight,
+                //   child: TextButton(
+                //     onPressed: isLoading ? null : () {},
+                //     child: const Text('Forgot password?'),
+                //   ),
+                // ),
                 const SizedBox(height: 20),
                 if (errorMessage.isNotEmpty)
                   Padding(
@@ -117,6 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               return;
                             }
 
+                            // ตรวจสอบรูปแบบอีเมล
                             if (!isValidEmail(email)) {
                               setState(() {
                                 errorMessage = 'รูปแบบอีเมลไม่ถูกต้อง';
@@ -124,6 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               return;
                             }
 
+                            // ตรวจสอบความยาวของรหัสผ่าน
                             if (!isValidPassword(password)) {
                               setState(() {
                                 errorMessage =
@@ -141,7 +144,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               final Login result = await userService
                                   .authenticateUser(email, password);
 
-                              if (result.role == "employee" ||
+                              if (result.id == "error" &&
+                                  result.role == "error") {
+                                setState(() {
+                                  errorMessage = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+                                });
+                              } else if (result.role == "employee" ||
                                   result.role == "user") {
                                 Provider.of<LoginProvider>(context,
                                         listen: false)
@@ -161,17 +169,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                 });
                               }
                             } catch (error) {
+                              print("Error: $error");
+
                               setState(() {
                                 if (error
                                     .toString()
                                     .contains('No internet connection')) {
                                   errorMessage =
                                       'กรุณาเชื่อมต่ออินเทอร์เน็ตเพื่อเข้าสู่ระบบ';
-                                } else if (error.toString().contains('401')) {
-                                  errorMessage = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
                                 } else {
                                   errorMessage =
-                                      'เข้าสู่ระบบไม่สำเร็จ โปรดเชื่อมต่ออินเทอร์เน็ต';
+                                      'เข้าสู่ระบบไม่สำเร็จ โปรดลองอีกครั้ง';
                                 }
                               });
                             } finally {
@@ -200,7 +208,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: isLoading
                           ? null
                           : () {
-                              context.go('/register');
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RegisterScreen(),
+                                ),
+                              );
                             },
                       child: const Text('Create account'),
                     ),

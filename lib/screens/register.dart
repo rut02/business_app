@@ -36,6 +36,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // leading: BackButton(),
         title: Text('ลงทะเบียน'),
       ),
       resizeToAvoidBottomInset: true,

@@ -84,30 +84,37 @@ class UserService {
   }
 
   Future<Login> authenticateUser(String email, String password) async {
-    final apiUrl = Uri.parse(api + '/login');
+  final apiUrl = Uri.parse(api + '/login');
 
-    try {
-      final response = await http.post(
-        apiUrl,
-        body: json.encode({'email': email, 'password': password}),
-        headers: {'Content-Type': 'application/json'},
-      );
+  try {
+    final response = await http.post(
+      apiUrl,
+      body: json.encode({'email': email, 'password': password}),
+      headers: {'Content-Type': 'application/json'},
+    );
 
-      print("Status code: ${response.statusCode}");
-      print("Response body: ${response.body}");
+    print("Status code: ${response.statusCode}");
+    print("Response body: ${response.body}");
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-        return Login.fromJson(data);
-      } else {
-        throw Exception(
-            'Failed to authenticate user. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print("Error authenticating user: $e");
-      throw Exception('โปรดเชื่อมต่ออินเทอร์เน็ต');
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Login.fromJson(data);
+    } else if (response.statusCode == 401) {
+
+      return Login.fromJson({"id": "error", "role": "error"});
+    } else {
+      throw Exception('Failed to authenticate user. Status code: ${response.statusCode}');
+    }
+  } catch (e) {
+    print("Error authenticating user: $e");
+
+    if (e.toString().contains('SocketException')) {
+      throw Exception('No internet connection');
+    } else {
+      throw Exception('An unexpected error occurred');
     }
   }
+}
 
 Future<User> getUserByid(String uid) async {
   try {
